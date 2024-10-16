@@ -24,16 +24,15 @@ func NewUser(conn net.Conn) *User {
 	// 启动监听当前user channel消息的goroutine
 	go user.ListenMessage()
 	return user
-
 }
 
 // ListenMessage 监听当前用户 channel 的消息
 func (u *User) ListenMessage() {
 	for {
 		msg := <-u.C
-		write, err := u.conn.Write([]byte(msg + "\n"))
+		_, err := u.conn.Write([]byte(msg + "\n"))
 		if err != nil {
-			fmt.Println("发送超时，时间为", write, err)
+			fmt.Println("login out")
 		}
 	}
 }

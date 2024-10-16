@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"sync"
 )
@@ -53,7 +54,28 @@ func (s *Server) Handler(conn net.Conn) {
 	s.mapLock.Unlock()
 
 	//广播新用户消息
-	s.BroadCast(user, fmt.Sprintf("%s come in", user.Name))
+	s.BroadCast(user, "user login")
+	go func() {
+		buf := make([]byte, 4096)
+		for {
+			n, err := conn.Read(buf)
+			if n == 0 {
+				msgExit := fmt.Sprintf("%s login out", user.Name)
+				s.BroadCast(user, msgExit)
+				s.mapLock.Lock()
+				delete(s.OnlineMap, user.Name)
+				s.mapLock.Unlock()
+				return
+			}
+			if err != nil && err != io.EOF {
+				fmt.Println("read failed, err:", err)
+				return
+			}
+			// 去除换行符
+			msg := string(buf[:n-1])
+			s.BroadCast(user, msg)
+		}
+	}()
 }
 func (s *Server) Start() {
 	//socket listen
