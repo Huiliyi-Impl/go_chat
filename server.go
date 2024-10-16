@@ -49,6 +49,7 @@ func (s *Server) Handler(conn net.Conn) {
 	// 处理客户端业务
 	fmt.Println("connected success")
 	user := NewUser(conn)
+	// 用户上线
 	s.mapLock.Lock()
 	s.OnlineMap[user.Name] = user
 	s.mapLock.Unlock()
@@ -62,6 +63,7 @@ func (s *Server) Handler(conn net.Conn) {
 			if n == 0 {
 				msgExit := fmt.Sprintf("%s login out", user.Name)
 				s.BroadCast(user, msgExit)
+				// 删除不在线的用户
 				s.mapLock.Lock()
 				delete(s.OnlineMap, user.Name)
 				s.mapLock.Unlock()
