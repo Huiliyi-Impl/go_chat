@@ -49,7 +49,7 @@ func (s *Server) Handler(conn net.Conn) {
 	// 处理客户端业务
 	fmt.Println("connected success")
 	user := NewUser(conn)
-
+	// 将当前用户加入到onlineMap中
 	s.mapLock.Lock()
 	s.OnlineMap[user.Name] = user
 	s.mapLock.Unlock()
