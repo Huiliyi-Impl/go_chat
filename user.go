@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
+	"strings"
 )
 
 type User struct {
@@ -47,7 +48,43 @@ func (u *User) Offline() {
 	u.server.BroadCast(u, "user login out")
 }
 func (u *User) DoMessage(msg string) {
-	u.server.BroadCast(u, msg)
+	if len(msg) > 2 && msg[0:2] == "./" {
+		u.Instructions(msg[2:])
+	} else {
+		u.server.BroadCast(u, msg)
+	}
+
+}
+
+// Instructions 指令发送器
+func (u *User) Instructions(msg string) {
+	u.server.mapLock.Lock()
+	defer u.server.mapLock.Unlock()
+
+	suffix := []string{"\r\n", "\n", "\r"}
+	for _, s := range suffix {
+		if strings.HasSuffix(msg, s) {
+			msg = msg[:len(msg)-1]
+			break
+		}
+	}
+
+	if msg == "who" {
+		for _, user := range u.server.OnlineMap {
+			msg := fmt.Sprintf("[%s] is %s...\n ", user.Name, "online")
+			u.SendMsg(msg)
+		}
+	} else {
+		u.SendMsg("The Directive Does Not Exist!")
+	}
+
+}
+func (u *User) SendMsg(msg string) {
+	//_, err := u.conn.Write([]byte(msg))
+	//if err != nil {
+	//	return
+	//}
+	u.C <- msg
 }
 
 // ListenMessage 监听当前用户 channel 的消息
