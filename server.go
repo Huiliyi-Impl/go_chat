@@ -48,25 +48,17 @@ func (s *Server) ListenMessage() {
 func (s *Server) Handler(conn net.Conn) {
 	// 处理客户端业务
 	fmt.Println("connected success")
-	user := NewUser(conn)
+	user := NewUser(conn, s)
 	// 将当前用户加入到onlineMap中
-	s.mapLock.Lock()
-	s.OnlineMap[user.Name] = user
-	s.mapLock.Unlock()
+	user.Online()
 
-	//广播新用户消息
-	s.BroadCast(user, "user login")
 	go func() {
 		buf := make([]byte, 4096)
 		for {
 			n, err := conn.Read(buf)
 			if n == 0 {
-				msgExit := fmt.Sprintf("%s login out", user.Name)
-				s.BroadCast(user, msgExit)
 				// 删除不在线的用户
-				s.mapLock.Lock()
-				delete(s.OnlineMap, user.Name)
-				s.mapLock.Unlock()
+				user.Offline()
 				return
 			}
 			if err != nil && err != io.EOF {
@@ -75,7 +67,7 @@ func (s *Server) Handler(conn net.Conn) {
 			}
 			// 去除换行符
 			msg := string(buf[:n-1])
-			s.BroadCast(user, msg)
+			user.DoMessage(msg)
 		}
 	}()
 }
