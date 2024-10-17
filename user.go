@@ -58,8 +58,6 @@ func (u *User) DoMessage(msg string) {
 
 // Instructions 指令发送器
 func (u *User) Instructions(msg string) {
-	u.server.mapLock.Lock()
-	defer u.server.mapLock.Unlock()
 
 	suffix := []string{"\r\n", "\n", "\r"}
 	for _, s := range suffix {
@@ -70,9 +68,26 @@ func (u *User) Instructions(msg string) {
 	}
 
 	if msg == "who" {
+		u.server.mapLock.Lock()
 		for _, user := range u.server.OnlineMap {
 			msg := fmt.Sprintf("[%s] is %s...\n ", user.Name, "online")
 			u.SendMsg(msg)
+		}
+		u.server.mapLock.Unlock()
+	} else if msg[:7] == "rename|" {
+		//消息格式 rename|newName
+		newName := strings.Split(msg, "|")[1]
+		//判断name是否存在
+		_, ok := u.server.OnlineMap[newName]
+		if ok {
+			u.SendMsg("The Name Already Exists!")
+		} else {
+			u.server.mapLock.Lock()
+			delete(u.server.OnlineMap, u.Name)
+			u.server.OnlineMap[newName] = u
+			u.server.mapLock.Unlock()
+			u.Name = newName
+			u.SendMsg("Rename Success!")
 		}
 	} else {
 		u.SendMsg("The Directive Does Not Exist!")
