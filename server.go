@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"runtime"
 	"sync"
+	"time"
 )
 
 type Server struct {
@@ -51,7 +53,7 @@ func (s *Server) Handler(conn net.Conn) {
 	user := NewUser(conn, s)
 	// 将当前用户加入到onlineMap中
 	user.Online()
-
+	live := make(chan bool)
 	go func() {
 		buf := make([]byte, 4096)
 		for {
@@ -68,8 +70,29 @@ func (s *Server) Handler(conn net.Conn) {
 			// 去除换行符
 			msg := string(buf[:n-1])
 			user.DoMessage(msg)
+			live <- true
 		}
 	}()
+
+	// 超时
+	for {
+		select {
+		case <-live:
+			//当前用户是活跃的
+			//不做任何事情，为了激活select，更新下面定时器
+			// do nothing
+		case <-time.After(60 * time.Second):
+			user.SendMsg("time out")
+			close(live)
+			err := conn.Close()
+			close(user.C)
+			if err != nil {
+				return
+			}
+			// 退出当前handler
+			runtime.Goexit()
+		}
+	}
 }
 func (s *Server) Start() {
 	//socket listen

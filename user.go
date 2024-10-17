@@ -41,11 +41,11 @@ func (u *User) Online() {
 
 // Offline 用户下线
 func (u *User) Offline() {
+	//广播新用户消息
+	u.server.BroadCast(u, "user login out")
 	u.server.mapLock.Lock()
 	delete(u.server.OnlineMap, u.Name)
 	u.server.mapLock.Unlock()
-	//广播新用户消息
-	u.server.BroadCast(u, "user login out")
 }
 func (u *User) DoMessage(msg string) {
 	if len(msg) > 2 && msg[0:2] == "./" {
@@ -95,11 +95,11 @@ func (u *User) Instructions(msg string) {
 
 }
 func (u *User) SendMsg(msg string) {
-	//_, err := u.conn.Write([]byte(msg))
-	//if err != nil {
-	//	return
-	//}
-	u.C <- msg
+	_, err := u.conn.Write([]byte(msg))
+	if err != nil {
+		return
+	}
+	//u.C <- msg
 }
 
 // ListenMessage 监听当前用户 channel 的消息
@@ -109,6 +109,7 @@ func (u *User) ListenMessage() {
 		_, err := u.conn.Write([]byte(msg + "\n"))
 		if err != nil {
 			fmt.Println("login out")
+			return
 		}
 	}
 }
