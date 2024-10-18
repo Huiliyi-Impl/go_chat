@@ -89,6 +89,19 @@ func (u *User) Instructions(msg string) {
 			u.Name = newName
 			u.SendMsg("Rename Success!")
 		}
+	} else if len(msg) > 6 && msg[:3] == "to|" {
+		msgArr := strings.Split(msg, "|")
+		if len(msgArr) != 3 {
+			u.SendMsg("The Directive Does Not Exist!")
+		}
+		target := msgArr[1]
+		content := msgArr[2]
+		user, ok := u.server.OnlineMap[target]
+		if !ok {
+			u.SendMsg("The User Does Not Exist!")
+		} else {
+			user.SendMsg(fmt.Sprintf("%s say: %s", u.Name, content))
+		}
 	} else {
 		u.SendMsg("The Directive Does Not Exist!")
 	}

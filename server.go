@@ -81,7 +81,7 @@ func (s *Server) Handler(conn net.Conn) {
 			//当前用户是活跃的
 			//不做任何事情，为了激活select，更新下面定时器
 			// do nothing
-		case <-time.After(60 * time.Second):
+		case <-time.After(5 * 60 * time.Second):
 			user.SendMsg("time out")
 			close(live)
 			err := conn.Close()
