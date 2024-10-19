@@ -70,11 +70,11 @@ func (u *User) Instructions(msg string) {
 	if msg == "who" {
 		u.server.mapLock.Lock()
 		for _, user := range u.server.OnlineMap {
-			msg := fmt.Sprintf("[%s] is %s...\n ", user.Name, "online")
+			msg := fmt.Sprintf("[%s] is %s...", user.Name, "online")
 			u.SendMsg(msg)
 		}
 		u.server.mapLock.Unlock()
-	} else if msg[:7] == "rename|" {
+	} else if len(msg) > 6 && msg[:7] == "rename|" {
 		//消息格式 rename|newName
 		newName := strings.Split(msg, "|")[1]
 		//判断name是否存在
@@ -108,11 +108,12 @@ func (u *User) Instructions(msg string) {
 
 }
 func (u *User) SendMsg(msg string) {
-	_, err := u.conn.Write([]byte(msg))
+	_, err := u.conn.Write([]byte(msg + "\n"))
 	if err != nil {
 		return
 	}
 	//u.C <- msg
+
 }
 
 // ListenMessage 监听当前用户 channel 的消息

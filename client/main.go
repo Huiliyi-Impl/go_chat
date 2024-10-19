@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"time"
 )
 
 var serverIp string
@@ -21,8 +20,7 @@ func main() {
 		fmt.Println(">>>> 连接服务器失败")
 		return
 	}
+	go client.dealResponse()
 	fmt.Println(">>>> 连接服务器成功")
-	for {
-		time.Sleep(1000 * time.Millisecond)
-	}
+	client.run()
 }
