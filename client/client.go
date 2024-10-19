@@ -37,6 +37,8 @@ func (client *Client) menu() bool {
 	client.flag = flag
 	return true
 }
+
+// 更新用户名
 func (client *Client) updateName() bool {
 	fmt.Println("请输入用户名:")
 	_, err := fmt.Scanln(&client.Name)
@@ -44,12 +46,41 @@ func (client *Client) updateName() bool {
 		fmt.Println("fmt.Scanln failed, err:", err)
 		return false
 	}
-	_, err1 := client.Conn.Write([]byte("./rename|" + client.Name + "\n"))
+	_, err1 := client.Conn.Write(str2byte("./rename|" + client.Name))
 	if err1 != nil {
 		fmt.Println("client.Conn.Write failed", err1)
 		return false
 	}
 	return true
+}
+
+// 公聊模式
+func (client *Client) publicChat() {
+	for {
+		var content string
+		_, err := fmt.Scanln(&content)
+		if err != nil {
+			fmt.Println("fmt.Scanln failed, err:", err)
+			return
+		}
+		if content == "exit" {
+			_, err2 := client.Conn.Write(str2byte(client.Name + "exit"))
+			if err2 != nil {
+				return
+			}
+			return
+		}
+		_, err1 := client.Conn.Write(str2byte(content))
+		if err1 != nil {
+			fmt.Println("client.Conn.Write failed", err1)
+			return
+		}
+	}
+}
+
+// 将字符串转化为字节数组并加上换行符
+func str2byte(str string) []byte {
+	return []byte(str + "\n")
 }
 func (client *Client) dealResponse() {
 	_, err := io.Copy(os.Stdout, client.Conn)
@@ -62,10 +93,11 @@ func (client *Client) run() {
 		if client.menu() {
 			switch client.flag {
 			case 1:
-				fmt.Println("公聊模式>>>>")
+				fmt.Println(">>>>公聊模式(输入exit退出)<<<")
+				client.publicChat()
 				break
 			case 2:
-				fmt.Println("私聊模式>>>>")
+				fmt.Println(">>>私聊模式(按exit退出)<<<")
 				break
 			case 3:
 				fmt.Println("更新用户名>>>>")
