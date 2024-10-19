@@ -20,7 +20,6 @@ func main() {
 		fmt.Println(">>>> 连接服务器失败")
 		return
 	}
-	go client.dealResponse()
 	fmt.Println(">>>> 连接服务器成功")
 	client.run()
 }

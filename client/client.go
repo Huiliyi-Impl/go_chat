@@ -41,6 +41,7 @@ func (client *Client) menu() bool {
 
 // 更新用户名
 func (client *Client) updateName() bool {
+	go client.dealResponse()
 	fmt.Println("请输入用户名:")
 	_, err := fmt.Scanln(&client.Name)
 	if err != nil {
@@ -98,6 +99,7 @@ func (client *Client) privateChat() {
 
 // 公聊模式
 func (client *Client) publicChat() {
+	go client.dealResponse()
 	for {
 		var content string
 		_, err := fmt.Scanln(&content)
@@ -162,6 +164,7 @@ func NewClient(serverIp string, serverPort int) *Client {
 		ServerPort: serverPort,
 		flag:       999,
 	}
+	// 连接服务器
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", serverIp, serverPort))
 	if err != nil {
 		fmt.Println("net.Dial failed, err:", err)
