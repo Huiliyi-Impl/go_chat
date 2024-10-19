@@ -69,9 +69,11 @@ func (u *User) Instructions(msg string) {
 
 	if msg == "who" {
 		u.server.mapLock.Lock()
+		index := 1
 		for _, user := range u.server.OnlineMap {
-			msg := fmt.Sprintf("[%s] is %s...", user.Name, "online")
+			msg := fmt.Sprintf("[%d].[%s] is %s...", index, user.Name, "online")
 			u.SendMsg(msg)
+			index++
 		}
 		u.server.mapLock.Unlock()
 	} else if len(msg) > 6 && msg[:7] == "rename|" {
